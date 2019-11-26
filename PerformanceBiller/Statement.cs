@@ -13,35 +13,43 @@ namespace PerformanceBiller
             var result = $"Statement for {invoice.GetValue("customer")}\n";
             var cultureInfo = new CultureInfo("en-US");
 
-            foreach (JObject perf in invoice.GetValue("performances")) {
-                var play = (JObject) plays.GetValue(perf.GetValue("playID").ToString());
+            foreach (JObject ListforPerformances in invoice.GetValue("performances")) {
                 var thisAmount = 0;
-                //armazenar gets em variaveis 
-                var valorAudience =  Convert.ToInt32(perf.GetValue("audience"));
-                var valorType = play.GetValue("type").ToString();
+                //store gets into variables
+                var valorforPlay = (JObject)plays.GetValue(ListforPerformances.GetValue("playID").ToString());
+                var valorforAudience =  Convert.ToInt32(ListforPerformances.GetValue("audience"));
+                var valorforType = valorforPlay.GetValue("type").ToString();
                 
 
-                switch (valorType) {
+                switch (valorforType) {
                     case "tragedy":
-                        if (valorAudience > 30) {
-                            thisAmount += 40000 + (1000 * (valorAudience - 30));
+                        thisAmount = 40000;
+                        if (valorforAudience > 30) {
+                            thisAmount += 1000 * (valorforAudience - 30);
                         }
                         break;
                     case "comedy":
-                        if (valorAudience > 20) {
-                            thisAmount += 40000 + (500 * (valorAudience - 20));
+                        thisAmount = 30000;
+                        if (valorforAudience > 20) {
+                            thisAmount += 10000 + (500 * (valorforAudience - 20));
                         }
-                        thisAmount += 300 * valorAudience;
+                        thisAmount += 300 * valorforAudience;
                         break;
                     default:
-                        throw new Exception($"unknown type: {valorType}");
-                }
+                        throw new Exception($"unknown type: {valorforType}");
+                } // end switch (valorforType)
+
+
                 // add volume credits
-                volumeCredits += Math.Max(valorAudience - 30, 0);
+                volumeCredits += Math.Max(valorforAudience - 30, 0);
+                
+                
                 // add extra credit for every ten comedy attendees
-                if ("comedy" == valorType) volumeCredits += valorAudience / 5;
+                if ("comedy" == valorforType) volumeCredits += valorforAudience / 5;
+                
+                
                 // print line for this order
-                result += $" {play.GetValue("name")}: {(thisAmount/100).ToString("C", cultureInfo)} ({perf.GetValue("audience")} seats)\n";
+                result += $" {valorforPlay.GetValue("name")}: {(thisAmount/100).ToString("C", cultureInfo)} ({ListforPerformances.GetValue("audience")} seats)\n";
                 totalAmount += thisAmount;
              }
              result += $"Amount owed is {(totalAmount/100).ToString("C", cultureInfo)}\n";
@@ -50,4 +58,5 @@ namespace PerformanceBiller
              return result;
         }
     }
+  
 }
