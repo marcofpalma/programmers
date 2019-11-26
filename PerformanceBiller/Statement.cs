@@ -16,27 +16,30 @@ namespace PerformanceBiller
             foreach (JObject perf in invoice.GetValue("performances")) {
                 var play = (JObject) plays.GetValue(perf.GetValue("playID").ToString());
                 var thisAmount = 0;
-                switch (play.GetValue("type").ToString()) {
+                //armazenar gets em variaveis 
+                var valorAudience =  Convert.ToInt32(perf.GetValue("audience"));
+                var valorType = play.GetValue("type").ToString();
+                
+
+                switch (valorType) {
                     case "tragedy":
-                        thisAmount = 40000;
-                        if (Convert.ToInt32(perf.GetValue("audience")) > 30) {
-                            thisAmount += 1000 * (Convert.ToInt32(perf.GetValue("audience")) - 30);
+                        if (valorAudience > 30) {
+                            thisAmount += 40000 + (1000 * (valorAudience - 30));
                         }
                         break;
                     case "comedy":
-                        thisAmount = 30000;
-                        if (Convert.ToInt32(perf.GetValue("audience")) > 20) {
-                            thisAmount += 10000 + 500 * (Convert.ToInt32(perf.GetValue("audience")) - 20);
+                        if (valorAudience > 20) {
+                            thisAmount += 40000 + (500 * (valorAudience - 20));
                         }
-                        thisAmount += 300 * Convert.ToInt32(perf.GetValue("audience"));
+                        thisAmount += 300 * valorAudience;
                         break;
                     default:
-                        throw new Exception($"unknown type: { play.GetValue("type").ToString()}");
+                        throw new Exception($"unknown type: {valorType}");
                 }
                 // add volume credits
-                volumeCredits += Math.Max(Convert.ToInt32(perf.GetValue("audience")) - 30, 0);
+                volumeCredits += Math.Max(valorAudience - 30, 0);
                 // add extra credit for every ten comedy attendees
-                if ("comedy" == play.GetValue("type").ToString()) volumeCredits += Convert.ToInt32(perf.GetValue("audience")) / 5;
+                if ("comedy" == valorType) volumeCredits += valorAudience / 5;
                 // print line for this order
                 result += $" {play.GetValue("name")}: {(thisAmount/100).ToString("C", cultureInfo)} ({perf.GetValue("audience")} seats)\n";
                 totalAmount += thisAmount;
